@@ -65,10 +65,10 @@ int main(){
 
     // 由于我们希望渲染一个三角形，我们一共要指定三个顶点，每个顶点都有一个3D位置。
     // 我们会将它们以标准化设备坐标的形式（OpenGL的可见区域）定义为一个float数组
-    float vertices[] = { 0.5f,  0.5f,  0.0f,// 右上角
-                         0.5f, -0.5f,  0.0f,// 右下角
-                        -0.5f, -0.5f,  0.0f,// 左下角
-                        -0.5f, 0.5f, 0.0f // 左上角
+    float vertices[] = {  0.5f,  0.5f,    0.0f,      1.0f,  0.3f,  0.5f, // 右上角
+                          0.5f, -0.5f,    0.0f,      0.3f, 0.9f, 1.0f, // 右下角
+                        -0.5f, -0.5f,  0.0f,     0.3f, 0.9f, 1.0f, // 左下角
+                        -0.5f,  0.5f,  0.0f,     1.0f, 0.3f, 0.5f// 左上角
                         };
     unsigned int indices[] = {
             // 注意索引从0开始! // 此例的索引(0,1,2,3)就是顶点数组vertices的下标，
@@ -124,10 +124,11 @@ int main(){
 
     const char * vertShaderSource = "#version 330 core\n"
                                     "layout (location = 0) in vec3 aPos;\n"
-                                    "out vec4 Pos;\n"
+                                    "layout (location = 1) in vec3 aColor;\n"
+                                    "out vec3 ourColor;\n"
                                     "void main(){\n"
                                     "    gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-                                    "    Pos = gl_Position;\n"
+                                    "    ourColor = aColor;\n"
                                     "}\0";
 
     // 为了能够让OpenGL使用它，我们必须在运行时动态编译它的源代码。我们首先要做的是创建一个着色器对象，注意还是用ID来引用的。
@@ -152,10 +153,9 @@ int main(){
 
     const char *fragShaderSoruce = "#version 330 core\n"
                                    "out vec4 FragColor;\n"
-                                   "in vec4 Pos;\n"
-                                   "uniform vec4 ourColor;\n"
+                                   "in vec3 ourColor;\n"
                                    "void main(){    \n"
-                                   "FragColor = Pos+ourColor;\n"
+                                   "FragColor = vec4(ourColor, 1.0f);\n"
                                    "}\0";
     unsigned int fragShader;
     fragShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -207,8 +207,10 @@ int main(){
     // 每个顶点属性从一个VBO管理的内存中获得它的数据，而具体是从哪个VBO（程序中可以有多个VBO）获取则是通过在调用glVertexAttribPointer时
     // 绑定到GL_ARRAY_BUFFER的VBO决定的。由于在调用glVertexAttribPointer之前绑定的是先前定义的VBO对象，
     // 顶点属性0现在会链接到它的顶点数据.
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), (void*)(3*sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     // 现在我们已经定义了OpenGL该如何解释顶点数据，我们现在应该使用glEnableVertexAttribArray，以顶点属性位置值作为参数，
     // 启用顶点属性；顶点属性默认是禁用的。自此，所有东西都已经设置好了：我们使用一个顶点缓冲对象将顶点数据初始化至缓冲中，
