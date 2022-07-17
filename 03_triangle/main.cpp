@@ -64,12 +64,17 @@ int main(){
 
     // 由于我们希望渲染一个三角形，我们一共要指定三个顶点，每个顶点都有一个3D位置。
     // 我们会将它们以标准化设备坐标的形式（OpenGL的可见区域）定义为一个float数组
-    float vertices[] = {
-            -0.5f, -0.5f, 0.0f,
-             0.5f, -0.5f, 0.0f,
-             0.0f,  0.5f, 0.0f
+    float vertices[] = { 0.5f,  0.5f,  0.0f,// 右上角
+                         0.5f, -0.5f,  0.0f,// 右下角
+                        -0.5f, -0.5f,  0.0f,// 左下角
+                        -0.5f, 0.5f, 0.0f // 左上角
+                        };
+    unsigned int indices[] = {
+            // 注意索引从0开始! // 此例的索引(0,1,2,3)就是顶点数组vertices的下标，
+            // 这样可以由下标代表顶点组合成矩形
+             0, 1, 3,// 第一个三角形
+             1, 2, 3// 第二个三角形
     };
-
 
     // 我们通过顶点缓冲对象(Vertex Buffer Objects, VBO)管理这个内存，它会在GPU内存（通常被称为显存）中储存大量顶点。
     // 使用这些缓冲对象的好处是我们可以一次性的发送一大批数据到显卡上，而不是每个顶点发送一次。从CPU把数据发送到显卡相\
@@ -78,11 +83,27 @@ int main(){
     // 中的其它对象一样，这个缓冲有一个独一无二的ID，所以我们可以使用glGenBuffers函数和一个缓冲ID生成一个VBO对象
     unsigned int VBO;
     glGenBuffers(1, &VBO);
+
     //------------------------------------------------------------------------------------------------------
-    // 从后面教程移动过来的
+    // 放到bind IBO 前面
     unsigned int VAO;
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
+    //------------------------------------------------------------------------------------------------------
+
+    // 添加index buffer
+    unsigned int IBO;
+    glGenBuffers(1, &IBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO); // 我故意把这个放到前面， 提示你这个是状态机机器, 各个buffer填充的顺序是独立的
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof (indices), indices, GL_STATIC_DRAW);
+    // &&&&&&&&&&&&&&&&&& 但是 你把VAO 放到了后面， 它记录不到你的IBO绑定， 操作失败.....................
+
+
+    //------------------------------------------------------------------------------------------------------
+    // 从后面教程移动过来的
+    // unsigned int VAO;
+    // glGenVertexArrays(1, &VAO);
+    // glBindVertexArray(VAO);
     //------------------------------------------------------------------------------------------------------
 
     // OpenGL有很多缓冲对象类型，顶点缓冲对象的缓冲类型是GL_ARRAY_BUFFER。OpenGL允许我们同时绑定多个缓冲，只要它们是不同
@@ -251,8 +272,8 @@ int main(){
         // 最后一个参数指定我们打算绘制多少个顶点，这里是3（我们只从我们的数据中渲染一个三角形，它只3个顶点
         glUseProgram(shaderProgram);
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-
+        //glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 
 
