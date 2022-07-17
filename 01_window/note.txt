@@ -1,0 +1,6 @@
+- glad可以在这生成下载:
+https://glad.dav1d.de/
+
+- 包含头文件
+#include "glad/glad.h" 要在glfw3.h之前
+
