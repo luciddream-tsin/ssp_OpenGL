@@ -13,7 +13,6 @@ include_directories(glad/include)
 add_subdirectory(glad)
 
 include_directories(glm)
-add_subdirectory(glm)
 
 
 add_subdirectory(01_window)
