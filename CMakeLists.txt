@@ -12,8 +12,12 @@ add_subdirectory(glfw)
 include_directories(glad/include)
 add_subdirectory(glad)
 
+include_directories(glm)
+add_subdirectory(glm)
+
 
 add_subdirectory(01_window)
 add_subdirectory(03_triangle)
 add_subdirectory(04_shader)
 add_subdirectory(05_textures)
+add_subdirectory(06_transformations)
