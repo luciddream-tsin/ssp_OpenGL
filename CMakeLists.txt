@@ -20,3 +20,5 @@ add_subdirectory(03_triangle)
 add_subdirectory(04_shader)
 add_subdirectory(05_textures)
 add_subdirectory(06_transformations)
+add_subdirectory(07_coordinate_systems)
+
