@@ -1,0 +1,12 @@
+- 你也可以忽略layout (location = 0)标识符，通过在OpenGL代码中使用glGetAttribLocation查询属性位置值(Location)，
+但是我更喜欢在着色器中设置它们，这样会更容易理解而且节省你（和OpenGL）的工作量
+
+- 如果你声明了一个uniform却在GLSL代码中没用过，编译器会静默移除这个变量，导致最后编译出的版本中并不会包含它，
+这可能导致几个非常麻烦的错误，记住这点
+
+- 注意，查询uniform地址不要求你之前使用过着色器程序，但是更新一个uniform之前你必须先使用程序（调用glUseProgram)，
+因为它是在当前激活的着色器程序中设置uniform的。
+
+- 因为OpenGL在其核心是一个C库，所以它不支持类型重载，在函数参数不同的时候就要为其定义新的函着色器// glUniform4f, glUniform4i...
+
+

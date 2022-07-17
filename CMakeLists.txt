@@ -15,3 +15,4 @@ add_subdirectory(glad)
 
 add_subdirectory(01_window)
 add_subdirectory(03_triangle)
+add_subdirectory(04_shader)
