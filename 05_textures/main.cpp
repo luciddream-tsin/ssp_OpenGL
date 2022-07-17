@@ -8,6 +8,10 @@
 #include "GLFW/glfw3.h"
 #include "Shader.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+
+#include "../stb/stb_image.h"
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window)
 {
@@ -67,16 +71,15 @@ int main(){
 
     // 由于我们希望渲染一个三角形，我们一共要指定三个顶点，每个顶点都有一个3D位置。
     // 我们会将它们以标准化设备坐标的形式（OpenGL的可见区域）定义为一个float数组
-    float vertices[] = {  0.5f,  0.5f,    0.0f,      0.4f,  0.3f,  0.5f, // 右上角
-                          0.5f, -0.5f,    0.0f,      0.3f, 0.9f, 1.0f, // 右下角
-                        -0.5f, -0.5f,  0.0f,     0.3f, 0.9f, 1.0f, // 左下角
-                        -0.5f,  0.5f,  0.0f,     1.0f, 0.3f, 0.5f// 左上角
+    float vertices[] = {  0.5f,   0.5f,   0.0f,      1.0f,  0.0f,  0.0f,        1.0f, 0.0f,// 右上角
+                          0.5f,  -0.5f,  0.0f,     0.0f, 1.0f, 0.0f,       1.0f,1.0f,// 右下角
+                        -0.5f, -0.5f,  0.0f,     0.0f, 0.0f, 1.0f,       0.0f,1.0f,// 左下角
+                        -0.5f,  0.5f,  0.0f,     1.0f, 1.0f, 1.0f,       0.0f,0.0f // 左上角
                         };
+
     unsigned int indices[] = {
-            // 注意索引从0开始! // 此例的索引(0,1,2,3)就是顶点数组vertices的下标，
-            // 这样可以由下标代表顶点组合成矩形
              0, 1, 3,// 第一个三角形
-             1, 2, 3// 第二个三角形
+             1, 2, 3 // 第二个三角形
     };
 
 
@@ -100,13 +103,62 @@ int main(){
     glBufferData(GL_ARRAY_BUFFER, sizeof (vertices), vertices, GL_STATIC_DRAW);
 
 
-    Shader shader("../04_shader/_vert.glsl", "../04_shader/_frag.glsl");
+    Shader shader("../05_textures/_vert.glsl", "../05_textures/_frag.glsl");
 
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), (void*)(3*sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(3*sizeof(float)));
     glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(6*sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+    //texture
+    int w1, h1, c1;
+    unsigned char *data1 = stbi_load("../05_textures/texture1.png", &w1, &h1, &c1, 0);
+    assert(data1);
+
+    int w2, h2, c2;
+    unsigned char *data2 = stbi_load("../05_textures/texture2.png", &w2, &h2, &c2, 0);
+    assert(data2);
+
+
+
+
+    unsigned int texture1, texture2;
+    glGenTextures(1, &texture1);
+    glGenTextures(2, &texture2);
+
+    glActiveTexture(GL_TEXTURE0);// 默认激活
+    glBindTexture(GL_TEXTURE_2D, texture1);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w1, h1, 0, GL_RGB, GL_UNSIGNED_BYTE, data1);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, texture2);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w2, h2, 0, GL_RGB, GL_UNSIGNED_BYTE, data2);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    //函数很长，参数也不少，所以我们一个一个地讲解：
+    // • 第一个参数指定了纹理目标(Target)。设置为GL_TEXTURE_2D意味着会生成与当前绑定的纹理对象在同一个目标上的纹理（任何绑定到GL_TEXTURE_1D和GL_TEXTURE_3D的纹理不会受到影响）。
+    // • 第二个参数为纹理指定多级渐远纹理的级别，如果你希望单独手动设置每个多级渐远纹理的级别的话。这里我们填0，也就是基本级别。
+    // • 第三个参数告诉OpenGL我们希望把纹理储存为何种格式。我们的图像只有RGB值，因此我们也把纹理储存为RGB值。
+    // • 第四个和第五个参数设置最终的纹理的宽度和高度。我们之前加载图像的时候储存了它们，所以我们使用对应的变量。
+    // • 下个参数应该总是被设为0（历史遗留的问题）。
+    // • 第七第八个参数定义了源图的格式和数据类型。我们使用RGB值加载这个图像，并把它们储存为char (byte)数组，我们将会传入对应值。
+    // • 最后一个参数是真正的图像数据
+
+
+
+    stbi_image_free(data1);
+    stbi_image_free(data2);
+
 
 
     shader.Use();
@@ -120,9 +172,18 @@ int main(){
         glClear(GL_COLOR_BUFFER_BIT);
 
         //------------------------set uniform---------------
-        // float timeValue = glfwGetTime();
-        // float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
-        // glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0, 1.0f);
+        float timeValue = glfwGetTime();
+        float s = (sin(timeValue) / 2.0f) + 0.5f;
+
+        std::string sinName = "s";
+        shader.SetFloat(sinName, s);
+
+        std::string textureUnit1Name = "texture1";
+        shader.SetInt(textureUnit1Name, 0);
+
+        std::string textureUnit2Name = "texture2";
+        shader.SetInt(textureUnit2Name, 1);
+
 
         glBindVertexArray(VAO);
         //glDrawArrays(GL_TRIANGLES, 0, 3);
