@@ -14,15 +14,29 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
+#include "Camera.h"
 
+Camera camera(glm::vec3(0.0, 0.0, 3.0));
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void mouse_move_callback(GLFWwindow *window, double x, double y);
 void processInput(GLFWwindow *window)
 {
+    if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        camera.ProcessWASDMove(camera.cameraLookVec_*0.1f);
+
+    if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        camera.ProcessWASDMove(-camera.cameraLookVec_*0.1f);
+
+    if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        camera.ProcessWASDMove(glm::normalize(glm::cross(camera.cameraUp_, camera.cameraLookVec_))*0.1f);
+    if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        camera.ProcessWASDMove(- glm::normalize(glm::cross(camera.cameraUp_, camera.cameraLookVec_))*0.1f);
+
+
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 }
 int Init(GLFWwindow* & window){
-
 
     //------------------------------------------------------------------------------------------------------------------
     glfwInit();
@@ -64,6 +78,7 @@ int Init(GLFWwindow* & window){
     //然而，当用户改变窗口的大小的时候，视口也应该被调整。我们可以对窗口注册一个回调函数(Callback Function)，它会在每次窗口大小被调整的时候被调用。这个回调函数的原型如下：
     //void framebuffer_size_callback(GLFWwindow* window, int width, int height);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetCursorPosCallback(window, mouse_move_callback);
 
 
 }
@@ -80,31 +95,31 @@ int main(){
     // 我们会将它们以标准化设备坐标的形式（OpenGL的可见区域）定义为一个float数组
     float vertices[] = {
             //the four vertex in front face.
-             0.5f,  0.5f,  0.5f,    0.6f, 0.2f, 0.0f,    1.0f, 0.0f,// 右上角 0
-             0.5f, -0.5f,  0.5f,    0.0f, 0.4f, 0.6f,    1.0f, 1.0f,// 右下角 1
+            0.5f,  0.5f,  0.5f,    0.6f, 0.2f, 0.0f,    1.0f, 0.0f,// 右上角 0
+            0.5f, -0.5f,  0.5f,    0.0f, 0.4f, 0.6f,    1.0f, 1.0f,// 右下角 1
             -0.5f, -0.5f,  0.5f,    0.2f, 0.0f, 1.0f,    0.0f, 1.0f,// 左下角 2
             -0.5f,  0.5f,  0.5f,    1.0f, 1.0f, 1.0f,    0.0f, 0.0f,// 左上角 3
 
             //the four vertex in back  face.
-             0.5f,  0.5f, -0.5f,    0.6f, 0.2f, 0.0f,    1.0f, 0.0f,// 右上角 4
-             0.5f, -0.5f, -0.5f,    0.0f, 0.4f, 0.6f,    1.0f, 1.0f,// 右下角 5
+            0.5f,  0.5f, -0.5f,    0.6f, 0.2f, 0.0f,    1.0f, 0.0f,// 右上角 4
+            0.5f, -0.5f, -0.5f,    0.0f, 0.4f, 0.6f,    1.0f, 1.0f,// 右下角 5
             -0.5f, -0.5f, -0.5f,    0.2f, 0.0f, 1.0f,    0.0f, 1.0f,// 左下角 6
             -0.5f,  0.5f, -0.5f,    1.0f, 1.0f, 1.0f,    0.0f, 0.0f // 左上角 7
     };
 
     unsigned int indices[] = {
-             0, 1, 3,// 第一个三角形
-             1, 2, 3, // 第二个三角形
-             7, 4, 0,
-             7, 0, 3,
-             1, 0, 4,
-             1, 4, 5,
-             6, 7, 3,
-             6, 3, 2,
-             2, 1, 6,
-             1, 5, 6,
-             4, 7, 6,
-             5, 4, 6,
+            0, 1, 3,// 第一个三角形
+            1, 2, 3, // 第二个三角形
+            7, 4, 0,
+            7, 0, 3,
+            1, 0, 4,
+            1, 4, 5,
+            6, 7, 3,
+            6, 3, 2,
+            2, 1, 6,
+            1, 5, 6,
+            4, 7, 6,
+            5, 4, 6,
     };
 
     //------------------------------------------------------------------------------------------------------
@@ -203,26 +218,32 @@ int main(){
         // GLM库从0.9.9版本起，默认会将矩阵类型初始化为一个零矩阵（所有元素均为0），而不是单位矩阵（对角元素为1，其它元素为0）。如果你使用的是0.9.9或0.9.9以上的版本，
         // 你需要将所有的矩阵初始化改为glm::mat4 mat = glm::mat4(1.0f)。如果你想与本教程的代码保持一致，请使用低于0.9.9版本的GLM，或者改用上述代码初始化所有的矩阵
 
-        glm::mat4 model = glm::mat4(1.0f);
-        glm::mat4 view = glm::mat4(1.0f);
-        glm::mat4 proj = glm::mat4(1.0);
 
 
-        model = glm::rotate(model, glm::radians(s*90.0f), glm::vec3(0.0, 1.0, 1.0));
-        view = glm::translate(view, glm::vec3(0.0, 0.0, -1.8));
-        proj = glm::perspective(glm::radians(45.0f), 800.f/600.f, 0.0001f, 1000.0f);
-
-        std::string modelName = "model";
-        shader.SetMat4(modelName, glm::value_ptr(model));
-        std::string viewName = "view";
-        shader.SetMat4(viewName, glm::value_ptr(view));
-        std::string projName = "projection";
-        shader.SetMat4(projName, glm::value_ptr(proj));
+        for(int i = -2; i < 3; ++i) {
+            glm::mat4 model = glm::mat4(1.0f);
+            glm::mat4 view = camera.GetView();
+            //glm::mat4 view = glm::mat4(1.0f);
+            glm::mat4 proj = glm::mat4(1.0);
 
 
-        glBindVertexArray(VAO);
-        //glDrawArrays(GL_TRIANGLES, 0, 3);
-        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+            model = glm::translate(model,  glm::vec3(s*i*1.5 , .0, -8.0));
+            model = glm::rotate(model, s*30.f, glm::vec3(0.f, 1.0f, 0.f));
+
+            proj = glm::perspective(glm::radians(45.0f), 800.f/600.f, 0.0001f, 1000.0f);
+
+            std::string modelName = "model";
+            shader.SetMat4(modelName, glm::value_ptr(model));
+            std::string viewName = "view";
+            shader.SetMat4(viewName, glm::value_ptr(view));
+            std::string projName = "projection";
+            shader.SetMat4(projName, glm::value_ptr(proj));
+
+
+            glBindVertexArray(VAO);
+            //glDrawArrays(GL_TRIANGLES, 0, 3);
+            glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+        }
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -239,4 +260,26 @@ int main(){
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
+}
+
+static double lastX = 400;
+static double lastY = 300;
+static double pitch = 0;
+static double yaw = 0;
+
+void mouse_move_callback(GLFWwindow *window, double x, double y){
+    double xOffset = x - lastX;
+    double yOffset = lastY - y;
+    xOffset *= 0.05;
+    yOffset *= 0.05;
+
+    pitch += yOffset;
+    yaw += xOffset;
+
+    if (pitch > +89.f) pitch = +89.f;
+    if (pitch < -89.f) pitch = -89.f;
+
+    camera.ProcessMouseMove(pitch, yaw);
+    lastX = x;
+    lastY = y;
 }
