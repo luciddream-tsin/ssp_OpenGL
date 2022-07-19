@@ -22,4 +22,5 @@ add_subdirectory(05_textures)
 add_subdirectory(06_transformations)
 add_subdirectory(07_coordinate_systems)
 add_subdirectory(08_camera)
+add_subdirectory(10_color)
 

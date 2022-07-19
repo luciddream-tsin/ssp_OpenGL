@@ -1,0 +1,33 @@
+把那张坐标空间变换过程的流程图记住并理解就成功一半了
+
+观察空间是右手李小龙法制, 而绘制三角形的面默认是左手李小龙顺序法则(此时发现向外)
+
+添加 glEnable(GL_DEPTH_TEST); 但是不添加 GL_DEPTH_BUFFER_BIT, 就是直接使用 glClear(GL_COLOR_BUFFER_BIT);
+观察深度测试的时候不清除 深度不断测试, 但是边缘会一直是若因若现， 这是精度问题.
+
+
+//下面添加相机类, 其实就是移动物体然后进行一个基变换, glm::lookAt， 就是干这个的,
+接受三个参数, (相机位置CP, 相机看的目标位置TP, UP向量), 不要忘记normalize.
+注意, 你填的参数是相机的, 但这个lookAt的结果矩阵是用于模型, 说明已经转置过啦!!!!!!!!
+
+过程讲解, 他用CP-TP 得到相机坐标系的z轴(任然是右手系, z轴正方向和观察方向相反),
+然后使用这个z得到x和y, 略,
+这里要说的是, TP是个点, TP = CP + LookVec, 所以只需要只需要计算看向方向向量LookVec即可
+NOTE:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+//你用以下方式计算旋转正交基, 就已经默认, 是看向z的负方向的, 若果默认看向别的地方, 计算公式不一样
+//而且千万不要忘记 给z轴添加负号!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+cameraLookVec_.x = cos(glm::radians(pitch)) * sin(glm::radians(yaw));
+cameraLookVec_.y = sin(glm::radians(pitch));
+cameraLookVec_.z = - cos(glm::radians(pitch)) * cos(glm::radians(yaw));
+
+
+不要忘了-89一边的限制, raw不用限制
+pitch = (pitch > 89.f) ? 89.f : pitch;
+
+
+glm::对矩阵的操作顺序是栈， 先进后用
+model = glm::translate(model,  glm::vec3(s*i*1.5 , .0, -10.0));
+model = glm::rotate(model, s*30.f, glm::vec3(0.f, 1.0f, 0.f));
+
+
+
