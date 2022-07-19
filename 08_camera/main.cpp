@@ -50,6 +50,8 @@ int Init(GLFWwindow* & window){
         std::cout << "create window failed" << std::endl;
         return -1;
     }
+
+
     //glfwCreateWindow函数需要窗口的宽和高作为它的前两个参数。第三个参数表示这个窗口的名称（标题），这里我们使用"LearnOpenGL"，
     // 最后两个参数我们暂时忽略。这个函数将会返回一个GLFWwindow对象，我们会在其它的GLFW操作中使用到。
     // 创建完窗口我们就可以通知GLFW将我们窗口的上下文设置为当前线程的主上下文了。
@@ -77,9 +79,9 @@ int Init(GLFWwindow* & window){
 
     //然而，当用户改变窗口的大小的时候，视口也应该被调整。我们可以对窗口注册一个回调函数(Callback Function)，它会在每次窗口大小被调整的时候被调用。这个回调函数的原型如下：
     //void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetCursorPosCallback(window, mouse_move_callback);
 
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
 }
 
